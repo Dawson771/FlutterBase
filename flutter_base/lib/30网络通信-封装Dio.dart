@@ -1,6 +1,11 @@
 import 'package:dio/dio.dart';
 
-void main(List<String> args) {}
+void main(List<String> args) {
+  DioUtils util = DioUtils(); //创建实例化对象
+  util.get("channels").then((res) {
+    print(res.data);
+  });
+}
 
 //封装工具类
 class DioUtils {
@@ -48,5 +53,11 @@ class DioUtils {
         },
       ),
     );
+  }
+
+  //向外暴露一个get方法
+
+  Future<Response<dynamic>> get(String url, {Map<String, dynamic>? params}) {
+    return _dio.get(url, queryParameters: params);
   }
 }
