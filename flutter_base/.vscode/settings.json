@@ -1,0 +1,12 @@
+{
+  // 只对 Dart 禁用 Copilot，其他语言正常用
+  "github.copilot.enable": {
+    "*": true,
+    "dart": false
+  },
+  // 强制 Dart 用官方格式化器 + 保存自动格式化
+  "[dart]": {
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true
+  }
+}
