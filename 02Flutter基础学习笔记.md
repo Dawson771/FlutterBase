@@ -652,3 +652,4 @@ build:返回构建Widget
 <img src="https://gitee.com/Dawson771/pic-bed/raw/master/img/202603120756840.png" alt="image-20260312075615556" style="zoom:67%;" />
 
 ●onGenerateRoute:允许你根据RouteSettings(包含路由名称和参数)动态创建不同的Route
+
