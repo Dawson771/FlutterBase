@@ -504,12 +504,12 @@ GridView-GridView.builder构造(性能最好)
 
 gridDelegates:SliverGridDelegateWithFixedCrossAxisCount /  SliverGridDelegateWithMaxCrossAxisExtent
 
-#### 自定义滚动容器-CustomScrollView
+#### 自定义滚动容器-CustomScrollView   Sliver家族
 
 ●作用：用于**组合多个可滚动组件**（如列表、网格），实现统一协调的滚动效果
-●Sliver:Flutter中**描述可滚动视图内部**一部分内容的组件，它是滚动视图的"切片"
+●**Sliver**:Flutter中**描述可滚动视图内部**一部分内容的组件，它是滚动视图的"切片"
 ●用法：通过**slivers**属性接收一个**Sliver组件列表**
-●Siiver组件对应关系：
+●Sliver组件对应关系：
 	SliverList 	=>	ListView
 	SliverGrid	 =>	GridView
 	SliverAppBar 	=>	AppBar
