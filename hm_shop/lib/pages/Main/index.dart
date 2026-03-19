@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   //定义数据根据数据进行渲染4个导航
   // 一般应用程序的导航是固定的
-  List<Map<String, String>> _tabList = [
+  final List<Map<String, String>> _tabList = [
     {
       "icon": "lib/assets/home1.png", //正常显示图标
       "icon_active": "lib/assets/home2.png", //选中显示图标
