@@ -1,4 +1,5 @@
 //封装api  目的是返回业务侧要的数据
+
 import 'package:hm_shop/constants/index.dart';
 import 'package:hm_shop/utils/DioRequest.dart';
 import 'package:hm_shop/viewmodels/home.dart';
@@ -11,6 +12,7 @@ Future<List<BannerItem>> getBannerListAPI() async {
     return BannerItem.fromJSON(item as Map<String, dynamic>);
   }).toList();
 }
+
 //分类列表
 Future<List<CategoryItem>> getCategoryListAPI() async {
   //返回请求
@@ -19,4 +21,11 @@ Future<List<CategoryItem>> getCategoryListAPI() async {
   ) {
     return CategoryItem.fromJSON(item as Map<String, dynamic>);
   }).toList();
+}
+
+//特惠推荐
+Future<PreferenceResult> getSuggestionListAPI() async {
+  return PreferenceResult.fromJSON(
+    await dioRequest.get(HttpConstants.PRODUCT_LIST),
+  );
 }

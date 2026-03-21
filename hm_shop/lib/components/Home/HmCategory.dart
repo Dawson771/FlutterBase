@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hm_shop/constants/index.dart';
+import 'package:hm_shop/viewmodels/home.dart';
 
 class HmCategory extends StatefulWidget {
   //传递数据

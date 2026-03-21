@@ -5,7 +5,6 @@ import 'package:hm_shop/components/Home/HmHot.dart';
 import 'package:hm_shop/components/Home/HmMoreList.dart';
 import 'package:hm_shop/components/Home/HmSlider.dart';
 import 'package:hm_shop/components/Home/HmSuggestion.dart';
-import 'package:hm_shop/constants/index.dart';
 import 'package:hm_shop/viewmodels/home.dart';
 
 class HomeView extends StatefulWidget {
@@ -16,6 +15,12 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  //推荐列表
+  PreferenceResult _preferenceResult = PreferenceResult(
+    id: "1",
+    title: "推荐",
+    subTypes: [],
+  );
   //分类列表
   List<CategoryItem> _categoryList = [];
   //轮播图数据
@@ -45,7 +50,9 @@ class _HomeViewState extends State<HomeView> {
       SliverToBoxAdapter(child: HmCategory(categoryList: _categoryList)), //分类组件
       SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-      SliverToBoxAdapter(child: HmSuggestion()), //推荐组件
+      SliverToBoxAdapter(
+        child: HmSuggestion(preferenceResult: _preferenceResult),
+      ), //推荐组件
       SliverToBoxAdapter(child: SizedBox(height: 10)),
       SliverToBoxAdapter(
         child: Padding(
@@ -70,6 +77,13 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     _getBannerList();
     _getCategoryList();
+    _getPreferenceList();
+  }
+
+  //获取推荐列表数据
+  _getPreferenceList() async {
+    _preferenceResult = await getSuggestionListAPI();
+    setState(() {});
   }
 
   //获取轮播图数据

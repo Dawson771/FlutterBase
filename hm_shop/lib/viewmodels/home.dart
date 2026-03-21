@@ -9,7 +9,137 @@ class BannerItem {
   }
 }
 
-
 // /Map<string,dynamic>
 //每一个轮播图具体类型
 //flutter必须强制转化没有隐私转化
+
+//分类列表
+class CategoryItem {
+  String id;
+  String name;
+  String picture;
+  List<CategoryItem>? children;
+  CategoryItem({
+    required this.id,
+    required this.name,
+    required this.picture,
+    this.children,
+  });
+  // 工厂方法  扩展工厂函数  一般用factory来声明 它一般用来创建对象
+  factory CategoryItem.fromJSON(Map<String, dynamic> json) {
+    // 创建对象  必须是CategoryItem对象
+    return CategoryItem(
+      id: json['id'],
+      name: json['name'],
+      picture: json['picture'],
+      children: json['children'] == null
+          ? []
+          : (json['children'] as List)
+                .map((item) => CategoryItem.fromJSON(item))
+                .toList(),
+    );
+  }
+}
+
+// 特惠推荐 - 商品项
+class GoodsItem {
+  String id;
+  String name;
+  String? desc;
+  String price;
+  String picture;
+  int orderNum;
+
+  GoodsItem({
+    required this.id,
+    required this.name,
+    this.desc,
+    required this.price,
+    required this.picture,
+    required this.orderNum,
+  });
+
+  factory GoodsItem.fromJSON(Map<String, dynamic> json) {
+    return GoodsItem(
+      id: json['id'],
+      name: json['name'],
+      desc: json['desc'],
+      price: json['price'],
+      picture: json['picture']?.toString().trim() ?? '',
+      orderNum: json['orderNum'] ?? 0,
+    );
+  }
+}
+
+// 特惠推荐 - 商品列表
+class GoodsItems {
+  int counts;
+  int pageSize;
+  int pages;
+  int page;
+  List<GoodsItem> items;
+
+  GoodsItems({
+    required this.counts,
+    required this.pageSize,
+    required this.pages,
+    required this.page,
+    required this.items,
+  });
+
+  factory GoodsItems.fromJSON(Map<String, dynamic> json) {
+    return GoodsItems(
+      counts: json['counts'] ?? 0,
+      pageSize: json['pageSize'] ?? 0,
+      pages: json['pages'] ?? 0,
+      page: json['page'] ?? 0,
+      items: json['items'] == null
+          ? []
+          : (json['items'] as List)
+                .map((item) => GoodsItem.fromJSON(item))
+                .toList(),
+    );
+  }
+}
+
+// 特惠推荐 - 子类型
+class SubType {
+  String id;
+  String title;
+  GoodsItems goodsItems;
+
+  SubType({required this.id, required this.title, required this.goodsItems});
+
+  factory SubType.fromJSON(Map<String, dynamic> json) {
+    return SubType(
+      id: json['id'],
+      title: json['title'],
+      goodsItems: GoodsItems.fromJSON(json['goodsItems'] ?? {}),
+    );
+  }
+}
+
+class PreferenceResult {
+  String id;
+  String title;
+  List<SubType> subTypes;
+
+  PreferenceResult({
+    required this.id,
+    required this.title,
+    required this.subTypes,
+  });
+
+  factory PreferenceResult.fromJSON(Map<String, dynamic> json) {
+    return PreferenceResult(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      subTypes: json['subTypes'] == null
+          ? []
+          : (json['subTypes'] as List)
+                .map((item) => SubType.fromJSON(item))
+                .toList(),
+    );
+  }
+}
+
