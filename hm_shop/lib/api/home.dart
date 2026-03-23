@@ -29,3 +29,37 @@ Future<PreferenceResult> getSuggestionListAPI() async {
     await dioRequest.get(HttpConstants.PRODUCT_LIST),
   );
 }
+
+// 热榜推荐
+Future<PreferenceResult> getInVogueListAPI() async {
+  final responseData = await dioRequest.get(HttpConstants.IN_VOGUE_LIST);
+  final ret = PreferenceResult.fromJSON(responseData);
+  return ret;
+}
+
+// 一站式推荐
+Future<PreferenceResult> getOneStopListAPI() async {
+  final responseData = await dioRequest.get(HttpConstants.ONE_STOP_LIST);
+  final ret = PreferenceResult.fromJSON(responseData );
+  return ret;
+}
+
+// 推荐列表
+Future<List<GoodDetailItem>> getRecommendListAPI(
+  Map<String, dynamic> params,
+) async {
+  // final responseData = await dioRequest.get(
+  //   HttpConstants.RECOMMEND_LIST,
+  //   params: params,
+  // );
+  // final ret = (responseData as List)
+  //     .map((item) => GoodDetailItem.formJSON(item))
+  //     .toList();
+  // // return ret;
+  return ((await dioRequest.get(HttpConstants.RECOMMEND_LIST, params: params))
+          as List)
+      .map((item) {
+        return GoodDetailItem.formJSON(item as Map<String, dynamic>);
+      })
+      .toList();
+}

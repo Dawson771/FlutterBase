@@ -21,6 +21,19 @@ class _HomeViewState extends State<HomeView> {
     title: "推荐",
     subTypes: [],
   );
+  // 热榜推荐
+  PreferenceResult _inVogueSection = PreferenceResult(
+    id: "",
+    title: "",
+    subTypes: [],
+  );
+  // 一站式推荐
+  PreferenceResult _oneStopSection = PreferenceResult(
+    id: "",
+    title: "",
+    subTypes: [],
+  );
+
   //分类列表
   List<CategoryItem> _categoryList = [];
   //轮播图数据
@@ -60,15 +73,20 @@ class _HomeViewState extends State<HomeView> {
           child: Flex(
             direction: Axis.horizontal,
             children: [
-              Expanded(child: HmHot()),
-              SizedBox(width: 10),
-              Expanded(child: HmHot()),
+              Expanded(
+                child: Hmhot(rssult: _inVogueSection, type: "hot"),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Hmhot(rssult: _oneStopSection, type: "stop"),
+              ),
             ],
           ),
         ),
       ),
       SliverToBoxAdapter(child: SizedBox(height: 10)),
-      HmMoreList(), //无限滚动列表,注意必须是返回sliver家族的组件
+      HmMoreList(recommendList: _recommendList), //无限滚动列表,注意必须是返回sliver家族的组件
+      // HmMoretList(recommendList: _recommendList),
     ];
   }
 
@@ -78,12 +96,9 @@ class _HomeViewState extends State<HomeView> {
     _getBannerList();
     _getCategoryList();
     _getPreferenceList();
-  }
-
-  //获取推荐列表数据
-  _getPreferenceList() async {
-    _preferenceResult = await getSuggestionListAPI();
-    setState(() {});
+    _getInVogueList();
+    _getOneStopList();
+    _getRecommendList();
   }
 
   //获取轮播图数据
@@ -95,6 +110,31 @@ class _HomeViewState extends State<HomeView> {
   //获取分类列表数据
   _getCategoryList() async {
     _categoryList = await getCategoryListAPI();
+    setState(() {});
+  }
+
+  //获取特惠推荐列表数据
+  _getPreferenceList() async {
+    _preferenceResult = await getSuggestionListAPI();
+    setState(() {});
+  }
+
+  // 获取热榜推荐
+  Future<void> _getInVogueList() async {
+    _inVogueSection = await getInVogueListAPI();
+    setState(() {});
+  }
+
+  // 获取一站式推荐
+  Future<void> _getOneStopList() async {
+    _oneStopSection = await getOneStopListAPI();
+    setState(() {});
+  }
+
+  // 获取推荐列表数据
+  List<GoodDetailItem> _recommendList = [];
+  _getRecommendList() async {
+    _recommendList = await getRecommendListAPI({"pageSize": 20});
     setState(() {});
   }
 

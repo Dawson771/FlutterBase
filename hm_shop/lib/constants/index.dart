@@ -12,4 +12,7 @@ class HttpConstants {
   static const String BANNER_LIST = "/home/banner";
   static const String CATEGORY_LIST = "/home/category/head"; //分类列表
   static const String PRODUCT_LIST = "/hot/preference"; //推荐列表
+  static const IN_VOGUE_LIST = "/hot/inVogue"; // 热榜推荐
+  static const ONE_STOP_LIST = "/hot/oneStop"; // 一站式推荐
+  static const RECOMMEND_LIST = "/home/recommend";//
 }
