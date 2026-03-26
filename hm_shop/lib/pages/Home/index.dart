@@ -5,6 +5,7 @@ import 'package:hm_shop/components/Home/HmHot.dart';
 import 'package:hm_shop/components/Home/HmMoreList.dart';
 import 'package:hm_shop/components/Home/HmSlider.dart';
 import 'package:hm_shop/components/Home/HmSuggestion.dart';
+import 'package:hm_shop/utils/ToastUtils.dart';
 import 'package:hm_shop/viewmodels/home.dart';
 
 class HomeView extends StatefulWidget {
@@ -116,19 +117,19 @@ class _HomeViewState extends State<HomeView> {
   }
 
   //获取轮播图数据
-  _getBannerList() async {
+  Future<void> _getBannerList() async {
     _bannerList = await getBannerListAPI();
     setState(() {});
   }
 
   //获取分类列表数据
-  _getCategoryList() async {
+  Future<void> _getCategoryList() async {
     _categoryList = await getCategoryListAPI();
     setState(() {});
   }
 
   //获取特惠推荐列表数据
-  _getPreferenceList() async {
+  Future<void> _getPreferenceList() async {
     _preferenceResult = await getSuggestionListAPI();
     setState(() {});
   }
@@ -169,12 +170,30 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    _page = 1;
+    _isLoading = false;
+    _hasMore = true;
+    _recommendList = [];
+    await _getBannerList();
+    await _getCategoryList();
+    await _getPreferenceList();
+    await _getInVogueList();
+    await _getOneStopList();
+    await _getRecommendList();
+    // print("刷新完成");
+    ToastUtils.showToast(context, "刷新完成");
+  }
+
   final ScrollController _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: _scrollController, //滚动监听
-      slivers: _getScrollChildren(),
-    ); // slivers: 滚动组件  sliver家族的组件
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: CustomScrollView(
+        controller: _scrollController, //滚动监听
+        slivers: _getScrollChildren(),
+      ), // slivers: 滚动组件  sliver家族的组件
+    );
   }
 }
