@@ -94,13 +94,21 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    _getBannerList();
-    _getCategoryList();
-    _getPreferenceList();
-    _getInVogueList();
-    _getOneStopList();
-    _getRecommendList();
-    _registerEvent();
+    // _getBannerList();
+    // _getCategoryList();
+    // _getPreferenceList();
+    // _getInVogueList();
+    // _getOneStopList();
+    // _getRecommendList();
+    _registerEvent(); //监听滚动到底部
+    // _refreshIndicatorKey.currentState?.show();
+    // initState>build=>下拉刷新组件=>才可以操作它
+    // Future.micoTask  微任务
+    Future.microtask(() {
+      _scrollOffset = 100;
+      setState(() {});
+      _refreshIndicatorKey.currentState?.show();
+    });
   }
 
   //监听滚动到底部的事件
@@ -119,31 +127,26 @@ class _HomeViewState extends State<HomeView> {
   //获取轮播图数据
   Future<void> _getBannerList() async {
     _bannerList = await getBannerListAPI();
-    setState(() {});
   }
 
   //获取分类列表数据
   Future<void> _getCategoryList() async {
     _categoryList = await getCategoryListAPI();
-    setState(() {});
   }
 
   //获取特惠推荐列表数据
   Future<void> _getPreferenceList() async {
     _preferenceResult = await getSuggestionListAPI();
-    setState(() {});
   }
 
   // 获取热榜推荐
   Future<void> _getInVogueList() async {
     _inVogueSection = await getInVogueListAPI();
-    setState(() {});
   }
 
   // 获取一站式推荐
   Future<void> _getOneStopList() async {
     _oneStopSection = await getOneStopListAPI();
-    setState(() {});
   }
 
   int _page = 1; //页码
@@ -183,17 +186,28 @@ class _HomeViewState extends State<HomeView> {
     await _getRecommendList();
     // print("刷新完成");
     ToastUtils.showToast(context, "刷新完成");
+    _scrollOffset = 0;
+    setState(() {});
   }
 
   final ScrollController _scrollController = ScrollController();
+  //GLobalKey是一个方法可以创建一个key绑定到Widget部件上可以操作Widget部件
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+  double _scrollOffset = 0;
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
+      key: _refreshIndicatorKey,
       onRefresh: _onRefresh,
-      child: CustomScrollView(
-        controller: _scrollController, //滚动监听
-        slivers: _getScrollChildren(),
-      ), // slivers: 滚动组件  sliver家族的组件
+      child: AnimatedContainer(
+        padding: EdgeInsets.only(top: _scrollOffset),
+        duration: Duration(milliseconds: 300),
+        child: CustomScrollView(
+          controller: _scrollController, //滚动监听
+          slivers: _getScrollChildren(),
+        ), // slivers: 滚动组件  sliver家族的组件
+      ),
     );
   }
 }
