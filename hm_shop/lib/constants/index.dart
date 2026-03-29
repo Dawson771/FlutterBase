@@ -1,4 +1,6 @@
 //全局常量
+import 'package:hm_shop/components/Mine/HmGuess.dart';
+
 class GlobalConstants {
   // static 静态变量  只读   类加载时初始化   类加载时只执行一次
   //const  不可更改
@@ -14,5 +16,6 @@ class HttpConstants {
   static const String PRODUCT_LIST = "/hot/preference"; //推荐列表
   static const IN_VOGUE_LIST = "/hot/inVogue"; // 热榜推荐
   static const ONE_STOP_LIST = "/hot/oneStop"; // 一站式推荐
-  static const RECOMMEND_LIST = "/home/recommend";//
+  static const RECOMMEND_LIST = "/home/recommend"; //
+  static const GUESS_LIST = "/home/goods/guessLike"; //猜你喜欢 后端返回的是是GoodsItem类型
 }
