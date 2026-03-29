@@ -1,4 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hm_shop/api/user.dart';
+import 'package:hm_shop/stores/UserController.dart';
 import 'package:hm_shop/utils/ToastUtils.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,6 +15,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
+  final UserController _userController = Get.find();
+
+  // 构建手机号输入框
   Widget _buildPhoneTextField() {
     return TextFormField(
       validator: (value) {
@@ -38,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // 构建验证码输入框
   Widget _buildCodeTextField() {
     return TextFormField(
       validator: (value) {
@@ -64,25 +72,79 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // final Logger _logger = Logger();
-  // Future<void> _login() async {
-  //   try {
-  //     LoadingDialog.show(context, msg: "登录中...");
-  //     final res = await loginAPI({
-  //       "account": _phoneController.text,
-  //       "password": _codeController.text,
-  //     });
-  //     // print("登录成功 ${res.toString()}");
-  //     _logger.i("登录成功 ${res.toString()}");
-  //     ToastUtils.showToast(context, "登录成功");
-  //     Navigator.of(context).pop(); // 返回上个页面
-  //   } catch (e) {
-  //     ToastUtils.showToast(context, e.toString());
-  //   } finally {
-  //     LoadingDialog.hide(context);
-  //   }
-  // }
+  /// 登录验证和 API 调用
+  ///
+  /// 执行表单验证，调用登录接口并处理结果
+  /// 成功则更新用户信息并返回上一页
+  /// 失败则显示错误提示
+  _login() async {
+    try {
+      // 调用登录 API
+      final res = await loginAPI({
+        "account": _phoneController.text, // 账号（手机号）
+        "password": _codeController.text, // 密码（验证码）
+      });
 
+      // 更新用户信息到全局状态
+      _userController.updataUserInfo(res);
+
+      // 显示成功提示
+      if (mounted) {
+        ToastUtils.showToast(context, "登录成功");
+        // 返回上一页
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      // 错误处理：显示友好的错误消息
+      String errorMessage;
+
+      if (e is DioException) {
+        // Dio 异常：提取错误消息，如果为空则使用默认提示
+        errorMessage = e.message ?? "登录失败，请稍后重试";
+
+        // 根据状态码提供更具体的提示
+        if (e.response?.statusCode == 400) {
+          errorMessage = "账号或密码错误";
+        } else if (e.response?.statusCode == 401) {
+          errorMessage = "未授权，请检查账号和密码";
+        } else if (e.response?.statusCode == 403) {
+          errorMessage = "访问被拒绝";
+        } else if (e.response?.statusCode == 404) {
+          errorMessage = "请求的资源不存在";
+        } else if (e.response?.statusCode == 500) {
+          errorMessage = "服务器错误，请稍后重试";
+        } else if (e.response?.statusCode == 502) {
+          errorMessage = "网关错误，请稍后重试";
+        } else if (e.response?.statusCode == 503) {
+          errorMessage = "服务暂时不可用";
+        } else if (e.type == DioExceptionType.connectionTimeout) {
+          errorMessage = "网络连接超时，请检查网络设置";
+        } else if (e.type == DioExceptionType.receiveTimeout) {
+          errorMessage = "响应超时，请稍后重试";
+        } else if (e.type == DioExceptionType.sendTimeout) {
+          errorMessage = "发送请求超时，请稍后重试";
+        } else if (e.type == DioExceptionType.badCertificate) {
+          errorMessage = "证书错误，请检查网络安全设置";
+        } else if (e.type == DioExceptionType.connectionError) {
+          errorMessage = "网络连接错误，请检查网络设置";
+        } else if (e.type == DioExceptionType.cancel) {
+          errorMessage = "请求已取消";
+        }
+      } else if (e is Exception) {
+        // 其他异常
+        errorMessage = "发生错误：${e.toString()}";
+      } else {
+        // 未知错误
+        errorMessage = "未知错误，请稍后重试";
+      }
+
+      if (mounted) {
+        ToastUtils.showToast(context, errorMessage);
+      }
+    }
+  }
+
+  // 登录按钮
   bool _isChecked = false;
   Widget _buildLoginButton() {
     return SizedBox(
@@ -90,9 +152,9 @@ class _LoginPageState extends State<LoginPage> {
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          if (_key.currentState!.validate()) {
+          if (_key.currentState?.validate() ?? false) {
             if (_isChecked) {
-              // _login();
+              _login();
             } else {
               ToastUtils.showToast(context, "请勾选用户协议");
             }
@@ -112,6 +174,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // 勾选用户协议
   Widget _buildCheckbox() {
     return Row(
       children: [
@@ -150,6 +213,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // 头部
   Widget _buildHeader() {
     return const Row(
       children: [
@@ -164,8 +228,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  final GlobalKey<FormState> _key = GlobalKey<FormState>();  // 表单
+  final GlobalKey<FormState> _key = GlobalKey<FormState>(); // 表单
 
+  // 构建页面
   @override
   Widget build(BuildContext context) {
     return Scaffold(

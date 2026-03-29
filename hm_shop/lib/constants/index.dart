@@ -18,4 +18,5 @@ class HttpConstants {
   static const ONE_STOP_LIST = "/hot/oneStop"; // 一站式推荐
   static const RECOMMEND_LIST = "/home/recommend"; //
   static const GUESS_LIST = "/home/goods/guessLike"; //猜你喜欢 后端返回的是是GoodsItem类型
+  static const LOGIN = "/login"; //登录
 }
