@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hm_shop/api/user.dart';
 import 'package:hm_shop/stores/UserController.dart';
+import 'package:hm_shop/utils/LoadingDialog.dart';
 import 'package:hm_shop/utils/ToastUtils.dart';
+import 'package:hm_shop/utils/TokenManager.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -75,26 +77,46 @@ class _LoginPageState extends State<LoginPage> {
   /// 登录验证和 API 调用
   ///
   /// 执行表单验证，调用登录接口并处理结果
-  /// 成功则更新用户信息并返回上一页
+  /// 成功则更新用户信息、保存 token 并返回上一页
   /// 失败则显示错误提示
   _login() async {
     try {
+      print("🔐 [LoginPage] 开始登录流程...");
+      Loadingdialog.show(context, message: "登录中...");
+      print("📞 [LoginPage] 账号：${_phoneController.text}");
+
       // 调用登录 API
       final res = await loginAPI({
         "account": _phoneController.text, // 账号（手机号）
         "password": _codeController.text, // 密码（验证码）
       });
-
-      // 更新用户信息到全局状态
+      print("📦 [LoginPage] 登录 API 调用成功:返回的用户信息：${res.toString()}");
+      print("🔑 [LoginPage] Token 值：${res.token}");
+      // 1. 更新用户信息到全局状态（内存）
       _userController.updataUserInfo(res);
+      print("✅ [LoginPage] 用户信息已更新到内存");
 
-      // 显示成功提示
+      // 2. 保存 token 到持久化存储（磁盘）
+      if (res.token.isNotEmpty) {
+        print("💾 [LoginPage] 准备保存 token 到 SharedPreferences...");
+        await tokenManager.setToken(res.token);
+        print(
+          "✅ [LoginPage] Token 已保存到磁盘，内存中的 token: ${tokenManager.getToken()}",
+        );
+      } else {
+        print("⚠️ [LoginPage] 警告：登录响应中 token 为空，无法保存");
+      }
+
+      // 3. 显示成功提示
       if (mounted) {
+        print("🎉 [LoginPage] 登录成功，准备返回上一页");
+        Loadingdialog.hide(context);
         ToastUtils.showToast(context, "登录成功");
-        // 返回上一页
+        // 4. 返回上一页
         Navigator.pop(context);
       }
     } catch (e) {
+      Loadingdialog.hide(context);
       // 错误处理：显示友好的错误消息
       String errorMessage;
 

@@ -8,9 +8,7 @@ import 'package:hm_shop/constants/index.dart';
 import 'package:hm_shop/utils/DioRequest.dart';
 import 'package:hm_shop/viewmodels/user.dart';
 
-/// 用户登录接口
-/// 
-/// 调用后端登录 API，验证用户身份并返回用户信息
+/// 用户登录接口 调用后端登录 API，验证用户身份并返回用户信息
 /// 
 /// 参数说明:
 /// - [data]: 登录请求参数 Map，通常包含以下字段:
@@ -62,24 +60,11 @@ import 'package:hm_shop/viewmodels/user.dart';
 /// ```
 /// 
 /// 与旧版本的对比:
-/// @{@template compare_with_old_version}
-/// **旧版本代码** (已注释):
 /// ```dart
 /// Future<dynamic> loginAPI(Map<String, dynamic> data) async {
 ///   return dioRequest.post(HttpConstants.LOGIN, data: data);
 /// }
-/// ```
-/// 
-/// **主要区别**:
-/// 
-/// | 对比项 | 旧版本 | 新版本 | 优势说明 |
-/// |--------|--------|--------|----------|
-/// | **返回类型** | `Future<dynamic>` | `Future<UserInfo>` | ✅ 类型安全，编译时检查<br>✅ IDE 智能提示<br>✅ 避免运行时类型错误 |
-/// | **数据处理** | 直接返回原始数据 | 转换为 UserInfo 对象 | ✅ 数据结构清晰<br>✅ 属性访问方便<br>✅ 减少拼写错误 |
-/// | **代码可维护性** | 低，需要手动解析 | 高，自动解析 | ✅ 减少重复代码<br>✅ 易于扩展和修改 |
-/// | **错误检测** | 运行时才能发现 | 编译时就能发现 | ✅ 提前发现问题<br>✅ 降低调试成本 |
-/// | **团队协作** | 需要文档说明返回结构 | 代码即文档 | ✅ 降低沟通成本<br>✅ 新人上手更快 |
-/// 
+
 /// **改进原因**:
 /// 1. **类型安全问题**：`dynamic` 类型失去了 Dart 的类型系统保护
 /// 2. **使用不便**：每次调用都需要手动解析 JSON 或进行类型转换
@@ -91,7 +76,7 @@ import 'package:hm_shop/viewmodels/user.dart';
 /// 2. 在模型类中实现 `fromJson` 工厂方法
 /// 3. API 方法返回具体类型而非 `dynamic`
 /// 4. 在 API 层完成数据转换，调用方直接使用对象
-/// @{@endtemplate}
+/// 
 Future<UserInfo> loginAPI(Map<String, dynamic> data) async {
   // 发起 POST 请求到登录接口
   // HttpConstants.LOGIN: 登录接口路径常量
@@ -101,5 +86,10 @@ Future<UserInfo> loginAPI(Map<String, dynamic> data) async {
   
   // 将响应的 JSON 数据转换为 UserInfo 对象
   // UserInfo.fromJson: 工厂方法，负责解析 JSON 并创建 UserInfo 实例
+  return UserInfo.fromJson(responseData);
+}
+
+Future<UserInfo> getUserInfoAPI() async {
+  final responseData = await dioRequest.get(HttpConstants.USER_PROFILE);
   return UserInfo.fromJson(responseData);
 }

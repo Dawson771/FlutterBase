@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hm_shop/api/user.dart';
 import 'package:hm_shop/pages/Cart/index.dart';
 import 'package:hm_shop/pages/Category/index.dart';
 import 'package:hm_shop/pages/Home/index.dart';
 import 'package:hm_shop/pages/Mine/index.dart';
+import 'package:hm_shop/stores/UserController.dart';
+import 'package:hm_shop/utils/TokenManager.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -53,6 +57,42 @@ class _MainPageState extends State<MainPage> {
 
   List<Widget> _getChildren() {
     return [HomeView(), CategoryView(), CartView(), MineView()];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initUser();
+  }
+
+  final UserController _userController = Get.put(UserController());
+
+  _initUser() async {
+    // 获取用户信息
+    // final userInfo = await UserViewModel.getUserInfo();
+    // print(userInfo);
+    print(
+      "🔍 [MainPage] 开始初始化用户信息...初始化前 TokenManager 内存中的 token: '${tokenManager.getToken()}",
+    );
+    await tokenManager.init();
+
+    final token = tokenManager.getToken();
+    print("📦 [MainPage] 从磁盘加载后的 token: '$token'");
+    print("📦 [MainPage] token 是否为空：${token.isEmpty}");
+
+    if (token.isNotEmpty) {
+      //如果 token 有值，那么获取用户信息
+      print("✅ [MainPage] Token 存在，准备调用 getUserInfoAPI()");
+      try {
+        final userInfo = await getUserInfoAPI();
+        print("✅ [MainPage] 获取用户信息成功：${userInfo.toString()}");
+        _userController.updataUserInfo(userInfo);
+      } catch (e) {
+        print("❌ [MainPage] 获取用户信息失败：$e");
+      }
+    } else {
+      print("⚠️ [MainPage] Token 为空，跳过用户信息加载");
+    }
   }
 
   int _currentIndex = 0;

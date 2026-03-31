@@ -4,7 +4,10 @@ import 'package:hm_shop/api/mine.dart';
 import 'package:hm_shop/components/Mine/HmGuess.dart';
 import 'package:hm_shop/components/Home/HmMoreList.dart';
 import 'package:hm_shop/stores/UserController.dart';
+import 'package:hm_shop/utils/TokenManager.dart';
+import 'package:hm_shop/utils/ToastUtils.dart';
 import 'package:hm_shop/viewmodels/home.dart';
+import 'package:hm_shop/viewmodels/user.dart';
 
 /// 个人中心页面
 ///
@@ -21,40 +24,63 @@ class MineView extends StatefulWidget {
 ///
 /// 管理页面 UI 状态、数据加载和滚动事件处理
 class _MineViewState extends State<MineView> {
-  final UserController _userController = Get.put(UserController());
+  final UserController _userController = Get.find();
   // ==================== Widget 构建方法区域 ====================
 
   /// 退出登录按钮组件
   ///
   /// 点击后弹出确认对话框，用户确认后执行退出登录操作
-  /// 目前确认按钮的 onPressed 回调为空，需要后续实现退出逻辑
+  /// 退出逻辑：
+  /// 1. 清除 token（内存 + 磁盘）
+  /// 2. 清空用户信息
+  /// 3. 关闭对话框
   Widget _getLogout() {
-    return GestureDetector(
-      onTap: () {
-        // 显示退出确认对话框
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("确认退出登录吗？"),
-              content: const Text("确认退出登录吗？"),
-              actions: [
-                // 取消按钮：关闭对话框
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("取消"),
-                ),
-                // 确认按钮：待实现退出登录逻辑
-                TextButton(onPressed: () {}, child: const Text("确认")),
-              ],
-            );
-          },
-        );
-      },
-      child: const Text("退出"),
-    );
+    return _userController.user.value.id.isNotEmpty
+        ? GestureDetector(
+            onTap: () {
+              // 显示退出确认对话框
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text("确认退出登录吗？"),
+                    content: const Text("此操作将清除本地保存的登录信息"),
+                    actions: [
+                      // 取消按钮：关闭对话框
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("取消"),
+                      ),
+                      // 确认按钮：执行退出登录
+                      TextButton(
+                        onPressed: () async {
+                          // 1. 关闭对话框
+                          Navigator.of(context).pop();
+
+                          // 2. 清除 token（内存 + 磁盘）
+                          await tokenManager.removeToken();
+
+                          // 3. 清空用户信息
+                          _userController.updataUserInfo(UserInfo.fromJson({}));
+
+                          // 4. 提示退出成功
+                          if (mounted) {
+                            ToastUtils.showToast(context, "已退出登录");
+                            print("✅ 用户已退出登录");
+                          }
+                        },
+                        child: const Text("确认"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: const Text("退出"),
+          )
+        : Text("");
   }
 
   /// 页面头部组件
@@ -64,6 +90,15 @@ class _MineViewState extends State<MineView> {
   /// - 头像：圆形头像，使用本地资源图片
   /// - 登录文本：点击跳转到登录页面
   Widget _buildHeader() {
+    // 添加调试信息
+    print("🔍 [MineView] 构建页面头部");
+    print(
+      "📦 [MineView] 当前 TokenManager 中的 token: '${TokenManager().getToken()}'",
+    );
+    print(
+      "👤 [MineView] 当前用户信息 - id: '${_userController.user.value.id}', account: '${_userController.user.value.account}'",
+    );
+
     return Container(
       // 渐变背景装饰
       decoration: const BoxDecoration(
@@ -77,13 +112,21 @@ class _MineViewState extends State<MineView> {
       padding: const EdgeInsets.only(left: 20, right: 40, top: 80, bottom: 20),
       child: Row(
         children: [
-          Obx((){
-            return CircleAvatar(  // 圆形头像组件
-            radius: 26, // 半径 26 像素
-            backgroundImage: _userController.user.value.id.isNotEmpty
-            ? NetworkImage(_userController.user.value.avatar)
-            : AssetImage("lib/assets/images/goods_avatar.png"),
-              );          // 头像图片资源
+          Obx(() {
+            //头像
+            final user = _userController.user.value;
+            print(
+              "🖼️ [MineView] 头像渲染 - id: ${user.id}, avatar: ${user.avatar}",
+            );
+
+            return CircleAvatar(
+              // 圆形头像组件
+              radius: 26, // 半径 26 像素
+              backgroundImage: user.id.isNotEmpty
+                  ? NetworkImage(user.avatar)
+                  : const AssetImage("lib/assets/images/goods_avatar.png")
+                        as ImageProvider,
+            ); // 头像图片资源
           }),
           const SizedBox(width: 12), // 头像右侧间距
           Expanded(
@@ -92,21 +135,29 @@ class _MineViewState extends State<MineView> {
               crossAxisAlignment: CrossAxisAlignment.start, // 子组件左对齐
               children: [
                 Obx(() {
-                  //obx必须有可监测的响应式数据
+                  //登录文本渲染
+                  //obx 必须有可监测的响应式数据
+                  final user = _userController.user.value;
+                  final isLoggedIn = user.id.isNotEmpty;
+
+                  print(
+                    "📝 [MineView] 登录文本渲染 - 是否登录：$isLoggedIn, 显示文本：${isLoggedIn ? user.account : '点击登录'}",
+                  );
+
                   return GestureDetector(
                     // 登录文本手势检测
                     onTap: () {
-                      if (_userController.user.value.id.isEmpty) {
+                      if (!isLoggedIn) {
                         // // 未登录，跳转到登录页面
-                        // Navigator.of(context).pushNamed("/login");
-                        // 点击跳转到登录页面
-                      Navigator.pushNamed(context, '/login');
+                        // // Navigator.of(context).pushNamed("/login");
+                        // // 点击跳转到登录页面
+                        Navigator.pushNamed(context, '/login');
+                      } else {
+                        print("ℹ️ [MineView] 已登录状态，点击无操作");
                       }
                     },
                     child: Text(
-                      _userController.user.value.id.isNotEmpty
-                          ? _userController.user.value.account
-                          : "点击登录",
+                      isLoggedIn ? user.account : "点击登录",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -117,6 +168,7 @@ class _MineViewState extends State<MineView> {
               ],
             ),
           ),
+          Obx(() => _getLogout()),
         ],
       ),
     );
